@@ -1,73 +1,94 @@
-export default function ICBase({ id, type, selected, onClick, onPinClick }) {
+export default function ICBase({
+  id,
+  type,
+  selected,
+  onClick,
+  onPinMouseDown,
+  onPinMouseUp
+}) {
   const leftPins = [1, 2, 3, 4, 5, 6, 7];
   const rightPins = [14, 13, 12, 11, 10, 9, 8];
 
-  const icName = {
-    "7404": "NOT",
-    "7408": "AND",
-    "7432": "OR",
-  }[type] || `IC BASE ${id}`;
+  const icName =
+    { "7404": "NOT", "7408": "AND", "7432": "OR" }[type] || `IC BASE ${id}`;
 
-  function pinId(num) {
-    return `pin-ic-${id}-${num}`;
-  }
+  const pinId = (num) => `pin-ic-${id}-${num}`;
 
   return (
-    <div
-      onClick={onClick}
-      className={`
-        relative flex flex-col items-center mx-6 cursor-pointer
-        transition-all overflow-visible
-        ${selected ? "ring-2 ring-cyan-400 scale-105" : ""}
-      `}
-    >
+    <div className="relative mx-6">
 
-      {/* IC body */}
-      <div className="bg-[#0d1a24] border border-white/10 rounded-lg px-6 py-6 shadow-lg overflow-visible relative">
-        <p className="text-xs text-white/80 text-center mb-3">{icName}</p>
+  
 
-        <div className="grid grid-cols-[auto_1fr_auto] gap-x-2">
-          <div className="flex flex-col justify-between text-white/70 text-[11px] pr-1">
-            {leftPins.map(num => <span key={num}>{num}</span>)}
-          </div>
 
-          <div></div>
+      {/* IC BODY (reference element) */}
+      <div
+  onClick={onClick}
+  className={`relative bg-[#0d1a24] border border-white/10 rounded-lg px-4 py-4 shadow-lg w-[140px] overflow-visible cursor-pointer ${
+    selected ? "ring-2 ring-cyan-400" : ""
+  }`}
+>
 
-          <div className="flex flex-col justify-between text-white/70 text-[11px] pl-1 text-right">
-            {rightPins.map(num => <span key={num}>{num}</span>)}
-          </div>
+
+  <p className="text-xs text-white/80 text-center mb-3">
+    {icName}
+  </p>
+
+  <div className="flex justify-between">
+
+    {/* LEFT SIDE */}
+    <div className="flex flex-col gap-[10px]">
+      {leftPins.map(num => (
+        <div key={num} className="relative flex items-center">
+          
+          {/* PIN (outside) */}
+          <div
+            id={pinId(num)}
+            onMouseDown={(e) =>
+              onPinMouseDown?.({ kind: "ic", compId: id, pin: num }, e)
+            }
+            onMouseUp={() =>
+              onPinMouseUp?.({ kind: "ic", compId: id, pin: num })
+            }
+            className="absolute -left-[32px] w-5 h-[3px] bg-gray-300 rounded-sm"
+
+          />
+
+          {/* NUMBER */}
+          <span className="text-[11px] text-white/70 ml-2">
+            {num}
+          </span>
         </div>
-      </div>
+      ))}
+    </div>
 
-      {/* Left Pins */}
-      <div className="absolute left-0 top-[60px] h-[112px] flex flex-col justify-between translate-x-[-14px]">
-        {leftPins.map(num => (
-          <div
-            key={num}
-            id={pinId(num)}
-            onClick={(e) => {
-              e.stopPropagation();
-              onPinClick({ kind: "ic", compId: id, pin: num });
-            }}
-            className="w-4 h-[3px] bg-gray-300 rounded-sm cursor-pointer relative z-20"
-          ></div>
-        ))}
-      </div>
+    {/* RIGHT SIDE */}
+    <div className="flex flex-col gap-[10px] items-end">
+      {rightPins.map(num => (
+        <div key={num} className="relative flex items-center justify-end">
+          
+          {/* NUMBER */}
+          <span className="text-[11px] text-white/70 mr-2">
+            {num}
+          </span>
 
-      {/* Right Pins */}
-      <div className="absolute right-0 top-[60px] h-[112px] flex flex-col justify-between translate-x-[14px]">
-        {rightPins.map(num => (
+          {/* PIN (outside) */}
           <div
-            key={num}
             id={pinId(num)}
-            onClick={(e) => {
-              e.stopPropagation();
-              onPinClick({ kind: "ic", compId: id, pin: num });
-            }}
-            className="w-4 h-[3px] bg-gray-300 rounded-sm cursor-pointer relative z-20"
-          ></div>
-        ))}
-      </div>
+            onMouseDown={(e) =>
+              onPinMouseDown?.({ kind: "ic", compId: id, pin: num }, e)
+            }
+            onMouseUp={() =>
+              onPinMouseUp?.({ kind: "ic", compId: id, pin: num })
+            }
+            className="absolute -right-[32px] w-5 h-[3px] bg-gray-300 rounded-sm"
+
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
     </div>
   );
 }

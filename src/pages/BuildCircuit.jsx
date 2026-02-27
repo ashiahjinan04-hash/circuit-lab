@@ -10,14 +10,13 @@ export default function BuildCircuit() {
   const [mode, setMode] = useState("select");
   const [powerOn, setPowerOn] = useState(false);
 
-  // Wiring state
+  // wiring
   const [wires, setWires] = useState([]);
   const [selectedPin, setSelectedPin] = useState(null);
+  const [dragWire, setDragWire] = useState(null);
 
-  // 16 INPUT SWITCHES
+  // switches & outputs
   const [switchStates, setSwitchStates] = useState(Array(16).fill(0));
-
-  // 16 OUTPUT LEDs
   const [outputs, setOutputs] = useState(Array(16).fill(0));
 
   // IC slots
@@ -36,103 +35,110 @@ export default function BuildCircuit() {
   };
 
   /* ===============================
-     IC Base Selection
+     Helpers
      =============================== */
-  function handleSelectICBase(id) {
-    if (mode !== "placeGate") return;
-    setSelectedICBaseId(id);
+
+  function getMousePos(e) {
+  const board = document.querySelector("#trainer-board");
+  if (!board) return { x: e.clientX, y: e.clientY };
+
+  const rect = board.getBoundingClientRect();
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
+}
+
+
+  function samePin(a, b) {
+    return a.kind === b.kind && a.compId === b.compId && a.pin === b.pin;
   }
 
-  function handlePlaceIC(icCode) {
-    if (!selectedICBaseId) return;
-    setIcSlots(prev =>
-      prev.map(slot =>
-        slot.id === selectedICBaseId ? { ...slot, type: icCode } : slot
-      )
-    );
-    setMode("select");
-  }
-
-  /* ===============================
-     Wiring Logic
-     =============================== */
-  function handlePinClick(pin) {
-    // normal mode → toggle switch if input
-    if (pin.kind === "input" && mode !== "wire") {
-      toggleSwitch(pin.pin);
-      return;
-    }
-
-    // not wire mode → ignore other pin clicks
-    if (mode !== "wire") return;
-
-    // first pin
-    if (!selectedPin) {
-      setSelectedPin(pin);
-      return;
-    }
-
-    // same pin → cancel
-    const same =
-      selectedPin.kind === pin.kind &&
-      selectedPin.compId === pin.compId &&
-      selectedPin.pin === pin.pin;
-    if (same) {
-      setSelectedPin(null);
-      return;
-    }
-
-    // prevent duplicate wires
-    const exists = wires.some(
-      w =>
-        (w.from.kind === selectedPin.kind &&
-          w.from.compId === selectedPin.compId &&
-          w.from.pin === selectedPin.pin &&
-          w.to.kind === pin.kind &&
-          w.to.compId === pin.compId &&
-          w.to.pin === pin.pin) ||
-        (w.to.kind === selectedPin.kind &&
-          w.to.compId === selectedPin.compId &&
-          w.to.pin === selectedPin.pin &&
-          w.from.kind === pin.kind &&
-          w.from.compId === pin.compId &&
-          w.from.pin === pin.pin)
-    );
-    if (exists) {
-      setSelectedPin(null);
-      return;
-    }
-
-    // add wire
-    const newWire = { id: cryptoId(), from: selectedPin, to: pin };
-    setWires(prev => [...prev, newWire]);
+  function cancelDrag() {
     setSelectedPin(null);
+    setDragWire(null);
   }
 
-  function handleDeleteWire(wireId) {
-    setWires(prev => prev.filter(w => w.id !== wireId));
-  }
-
-  function cryptoId() {
+  function cryptoSafeId() {
     if (crypto?.randomUUID) return crypto.randomUUID();
     return "w_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
   }
 
   /* ===============================
-     Switch Logic
+     Drag Wiring Logic
      =============================== */
 
-  function toggleSwitch(index) {
-    if (!powerOn) return; // cannot toggle when OFF
-    setSwitchStates(prev => {
-      const newArr = [...prev];
-      newArr[index] = newArr[index] ? 0 : 1;
-      return newArr;
-    });
+  function onPinMouseDown(pin, e) {
+  e.stopPropagation();
+
+  setMode("wire"); // ensure wiring mode
+  setSelectedPin(pin);
+  setDragWire({ from: pin, to: getMousePos(e) });
+}
+
+
+
+  function onPinMouseUp(pin) {
+    if (mode !== "wire" || !selectedPin) return;
+
+    if (samePin(selectedPin, pin)) {
+      cancelDrag();
+      return;
+    }
+    // ❌ Prevent output → output
+if (
+  selectedPin.kind === "output" &&
+  pin.kind === "output"
+) {
+  cancelDrag();
+  return;
+}
+
+// ❌ Prevent vcc ↔ gnd
+if (
+  (selectedPin.kind === "vcc" && pin.kind === "gnd") ||
+  (selectedPin.kind === "gnd" && pin.kind === "vcc")
+) {
+  cancelDrag();
+  return;
+}
+
+    const exists = wires.some(w =>
+      (samePin(w.from, selectedPin) && samePin(w.to, pin)) ||
+      (samePin(w.from, pin) && samePin(w.to, selectedPin))
+    );
+
+    if (!exists) {
+      setWires(prev => [
+        ...prev,
+        { id: cryptoSafeId(), from: selectedPin, to: pin }
+      ]);
+    }
+
+    cancelDrag();
   }
 
+  useEffect(() => {
+    function onMove(e) {
+      if (!dragWire) return;
+      setDragWire(prev => ({ ...prev, to: getMousePos(e) }));
+    }
+
+    function onUp() {
+      if (dragWire) cancelDrag();
+    }
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [dragWire]);
+
   /* ===============================
-     Logic Engine Execution
+     Logic Engine
      =============================== */
 
   useEffect(() => {
@@ -154,29 +160,47 @@ export default function BuildCircuit() {
       <Logo />
 
       <TrainerBoard
-  icSlots={icSlots}
-  selectedICBaseId={selectedICBaseId}
-  onSelect={handleSelectICBase}
+        icSlots={icSlots}
+        selectedICBaseId={selectedICBaseId}
+        onSelect={(id) => {
+          setSelectedICBaseId(id); // ✅ always allow selection
+        }}
 
-  wires={wires}
-  onPinClick={handlePinClick}
-  selectedPin={selectedPin}
-  mode={mode}
-  onDeleteWire={handleDeleteWire}
-
-  powerOn={powerOn}
-  switchStates={switchStates}
-  outputs={outputs}
-  onToggleSwitch={toggleSwitch}
-/>
-
-      <BottomToolbar
+        wires={wires}
         mode={mode}
-        setMode={setMode}
-        icCatalog={icCatalog}
-        onPlaceIC={handlePlaceIC}
+        onDeleteWire={(id) =>
+          setWires(w => w.filter(x => x.id !== id))
+        }
+
         powerOn={powerOn}
-        setPowerOn={setPowerOn}
+        switchStates={switchStates}
+        setSwitchStates={setSwitchStates}
+        outputs={outputs}
+
+        onPinMouseDown={onPinMouseDown}
+        onPinMouseUp={onPinMouseUp}
+        dragWire={dragWire}
+      />
+      <BottomToolbar 
+        mode={mode} 
+        setMode={setMode} 
+        icCatalog={icCatalog} 
+        onPlaceIC={(code) => {
+    if (!selectedICBaseId) return; // 🚫 no base selected
+
+    setIcSlots(prev =>
+      prev.map(slot =>
+        slot.id === selectedICBaseId
+          ? { ...slot, type: code }
+          : slot
+      )
+    );
+
+    setSelectedICBaseId(null); // ✅ clear highlight
+    setMode("select");        // ✅ exit placement mode
+  }} 
+        powerOn={powerOn} 
+        setPowerOn={setPowerOn} 
       />
     </div>
   );
