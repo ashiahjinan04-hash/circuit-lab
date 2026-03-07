@@ -72,5 +72,77 @@ export const IC_DEFINITIONS = {
       14: { role: "vcc" },
       7: { role: "gnd" },
     }
+  },
+
+  "7400": {
+    type: "NAND",
+    pins: {
+      1: { role: "inA", gate: 1 },
+      2: { role: "inB", gate: 1 },
+      3: { role: "out", gate: 1 },
+
+      4: { role: "inA", gate: 2 },
+      5: { role: "inB", gate: 2 },
+      6: { role: "out", gate: 2 },
+
+      10: { role: "inA", gate: 3 },
+      9: { role: "inB", gate: 3 },
+      8: { role: "out", gate: 3 },
+
+      13: { role: "inA", gate: 4 },
+      12: { role: "inB", gate: 4 },
+      11: { role: "out", gate: 4 },
+
+      14: { role: "vcc" },
+      7: { role: "gnd" },
+    }
+  },
+
+  "7402": {
+    type: "NOR",
+    pins: {
+      2: { role: "inA", gate: 1 },
+      3: { role: "inB", gate: 1 },
+      1: { role: "out", gate: 1 },
+
+      5: { role: "inA", gate: 2 },
+      6: { role: "inB", gate: 2 },
+      4: { role: "out", gate: 2 },
+
+      8: { role: "inA", gate: 3 },
+      9: { role: "inB", gate: 3 },
+      10: { role: "out", gate: 3 },
+
+      11: { role: "inA", gate: 4 },
+      12: { role: "inB", gate: 4 },
+      13: { role: "out", gate: 4 },
+
+      14: { role: "vcc" },
+      7: { role: "gnd" },
+    }
+  },
+
+  "7486": {
+    type: "XOR",
+    pins: {
+      1: { role: "inA", gate: 1 },
+      2: { role: "inB", gate: 1 },
+      3: { role: "out", gate: 1 },
+
+      4: { role: "inA", gate: 2 },
+      5: { role: "inB", gate: 2 },
+      6: { role: "out", gate: 2 },
+
+      10: { role: "inA", gate: 3 },
+      9: { role: "inB", gate: 3 },
+      8: { role: "out", gate: 3 },
+
+      13: { role: "inA", gate: 4 },
+      12: { role: "inB", gate: 4 },
+      11: { role: "out", gate: 4 },
+
+      14: { role: "vcc" },
+      7: { role: "gnd" },
+    }
   }
 };

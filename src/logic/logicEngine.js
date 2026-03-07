@@ -172,6 +172,18 @@ function evaluateICOutput(slot, def, pinDef, pinToNode, nodeValues) {
     result = inputs["inA"] || inputs["inB"] ? 1 : 0;
   }
 
+  if (def.type === "NAND") {
+    result = !(inputs["inA"] && inputs["inB"]) ? 1 : 0;
+  }
+
+  if (def.type === "NOR") {
+    result = !(inputs["inA"] || inputs["inB"]) ? 1 : 0;
+  }
+
+  if (def.type === "XOR") {
+    result = (inputs["inA"] !== inputs["inB"]) ? 1 : 0;
+  }
+
   const outPin = relatedPins.find(p => p.role === "out").pin;
   const outNode = pinToNode[`pin-ic-${slot.id}-${outPin}`];
   nodeValues[outNode] = result;

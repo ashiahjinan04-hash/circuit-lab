@@ -7,7 +7,7 @@ export default function HeroSection() {
     <section className="pt-24 pb-24">
       <div className="container mx-auto px-2 container-max">
         <div className="relative hero-bg rounded-2xl overflow-hidden glass pt-6 pb-4 px-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          
+
           {/* Left Content */}
           <div className="space-y-6 max-w-xl">
             <div className="badge-glow">
@@ -30,10 +30,10 @@ export default function HeroSection() {
 
             {/* Buttons */}
             <div className="flex gap-4 items-center mt-2">
-              
+
               {/* Start Building Circuit Button - Updated to Link */}
               <Link
-                to="/build"
+                to="/dashboard"
                 className="btn-neon text-white px-5 py-3 rounded-lg font-medium shadow-lg hover:scale-[1.02] transition transform"
               >
                 Start Building Circuit →
