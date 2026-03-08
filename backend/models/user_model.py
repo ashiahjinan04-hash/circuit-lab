@@ -14,6 +14,9 @@ class UserDB(BaseModel):
     password_hash: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=50)
+
 class UserResponse(BaseModel):
     id: str
     name: str

@@ -97,6 +97,33 @@ export function AuthProvider({ children }) {
         setIsSignupModalOpen(true);
     };
 
+    const updateProfile = async (name) => {
+        if (!token) throw new Error("Not authenticated");
+        
+        try {
+            const response = await fetch('http://localhost:8000/api/auth/me', {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (response.ok) {
+                const updatedUser = await response.json();
+                setUser(updatedUser);
+                return updatedUser;
+            } else {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to update profile');
+            }
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            throw error;
+        }
+    };
+
     const closeModals = () => {
         setIsLoginModalOpen(false);
         setIsSignupModalOpen(false);
@@ -104,7 +131,7 @@ export function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider value={{
-            user, token, login, signup, logout,
+            user, token, login, signup, logout, updateProfile,
             isLoginModalOpen, isSignupModalOpen,
             openLogin, openSignup, closeModals
         }}>

@@ -5,7 +5,7 @@ from datetime import timedelta
 import uuid
 
 from database.mongodb_connection import get_database
-from models.user_model import UserCreate, UserDB, UserResponse, Token
+from models.user_model import UserCreate, UserDB, UserResponse, Token, UserUpdate
 from middleware.auth_middleware import get_password_hash, verify_password, create_access_token, get_current_user
 from config import settings
 
@@ -83,4 +83,41 @@ async def get_user_profile(user_id: str = Depends(get_current_user), db=Depends(
         name=user["name"],
         email=user["email"],
         created_at=user["created_at"]
+    )
+
+@router.put("/me", response_model=UserResponse)
+async def update_user_profile(
+    update_data: UserUpdate, 
+    user_id: str = Depends(get_current_user), 
+    db=Depends(get_database)
+):
+    # Prepare update dict, only include set fields
+    update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+    
+    if not update_dict:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No valid update data provided"
+        )
+        
+    # Update user in database
+    result = await db.users.update_one(
+        {"_id": user_id},
+        {"$set": update_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+        
+    # Fetch updated user
+    updated_user = await db.users.find_one({"_id": user_id})
+    
+    return UserResponse(
+        id=updated_user["_id"],
+        name=updated_user["name"],
+        email=updated_user["email"],
+        created_at=updated_user["created_at"]
     )
