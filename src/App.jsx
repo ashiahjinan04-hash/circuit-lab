@@ -8,10 +8,11 @@ import BuildCircuit from "./pages/BuildCircuit";
 import AuthModals from "./components/AuthModals";
 import Profile from "./pages/Profile";
 import ProjectsDashboard from "./pages/ProjectsDashboard";
+import CircuitGuide from "./pages/CircuitGuide";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-[#031327] text-white">
+    <div className="min-h-screen bg-[#031327] text-white flex flex-col">
       <AuthModals />
 
       {/* Navbar should show only on Home, not on Builder */}
@@ -29,6 +30,7 @@ export default function App() {
 
         <Route path="/profile" element={<Profile />} />
         <Route path="/dashboard" element={<ProjectsDashboard />} />
+        <Route path="/circuit-guide" element={<CircuitGuide />} />
 
         {/* Circuit Builder Page (no navbar, no footer) */}
         <Route

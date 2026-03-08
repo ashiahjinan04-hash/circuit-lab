@@ -27,9 +27,8 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-slate-200">
-          <a className="hover:underline cursor-pointer">Circuit Guides</a>
+          <Link to="/circuit-guide" className="hover:underline cursor-pointer">Circuit Guides</Link>
           <Link to="/dashboard" className="hover:underline cursor-pointer">Build Circuit</Link>
-          <a className="hover:underline cursor-pointer">About</a>
           <a className="hover:underline cursor-pointer">Contact</a>
         </nav>
 

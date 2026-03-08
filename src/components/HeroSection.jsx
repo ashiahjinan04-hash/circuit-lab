@@ -39,13 +39,13 @@ export default function HeroSection() {
                 Start Building Circuit →
               </Link>
 
-              <button className="btn-outline glass text-slate-200 px-4 py-3 rounded-lg flex items-center gap-3">
+              <Link to="/circuit-guide" className="btn-outline glass text-slate-200 px-4 py-3 rounded-lg flex items-center gap-3 hover:text-white transition-colors">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="opacity-90">
                   <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.2" />
                   <path d="M7 9h10" stroke="currentColor" strokeWidth="1.2" />
                 </svg>
                 Circuit Guides
-              </button>
+              </Link>
             </div>
 
             <div className="text-xs text-slate-400 mt-4">
