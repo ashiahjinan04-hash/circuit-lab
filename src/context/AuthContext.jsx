@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
+const API = "https://circuit-lab.onrender.com";
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('token') || null);
@@ -13,16 +15,16 @@ export function AuthProvider({ children }) {
             if (token) {
                 localStorage.setItem('token', token);
                 try {
-                    const response = await fetch('http://localhost:8000/api/auth/me', {
+                    const response = await fetch(`${API}/api/auth/me`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
                     });
+
                     if (response.ok) {
                         const userData = await response.json();
                         setUser(userData);
                     } else {
-                        // Token might be invalid or expired
                         localStorage.removeItem('token');
                         setToken(null);
                         setUser(null);
@@ -40,13 +42,13 @@ export function AuthProvider({ children }) {
     }, [token]);
 
     const login = async (email, password) => {
-        // Mock for now, will connect to real endpoint later
         try {
-            const response = await fetch('http://localhost:8000/api/auth/login', {
+            const response = await fetch(`${API}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({ username: email, password: password })
             });
+
             if (response.ok) {
                 const data = await response.json();
                 setToken(data.access_token);
@@ -56,6 +58,7 @@ export function AuthProvider({ children }) {
                 const error = await response.json();
                 throw new Error(error.detail || 'Login failed');
             }
+
         } catch (error) {
             throw error;
         }
@@ -63,13 +66,13 @@ export function AuthProvider({ children }) {
 
     const signup = async (name, email, password) => {
         try {
-            const response = await fetch('http://localhost:8000/api/auth/signup', {
+            const response = await fetch(`${API}/api/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })
             });
+
             if (response.ok) {
-                // Automatically login after signup
                 await login(email, password);
                 setIsSignupModalOpen(false);
                 return true;
@@ -77,6 +80,7 @@ export function AuthProvider({ children }) {
                 const error = await response.json();
                 throw new Error(error.detail || 'Signup failed');
             }
+
         } catch (error) {
             throw error;
         }
@@ -85,6 +89,7 @@ export function AuthProvider({ children }) {
     const logout = () => {
         setToken(null);
         setUser(null);
+        localStorage.removeItem('token');
     };
 
     const openLogin = () => {
@@ -99,11 +104,11 @@ export function AuthProvider({ children }) {
 
     const updateProfile = async (name) => {
         if (!token) throw new Error("Not authenticated");
-        
+
         try {
-            const response = await fetch('http://localhost:8000/api/auth/me', {
+            const response = await fetch(`${API}/api/auth/me`, {
                 method: 'PUT',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
@@ -118,6 +123,7 @@ export function AuthProvider({ children }) {
                 const error = await response.json();
                 throw new Error(error.detail || 'Failed to update profile');
             }
+
         } catch (error) {
             console.error("Error updating profile:", error);
             throw error;
@@ -131,9 +137,17 @@ export function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider value={{
-            user, token, login, signup, logout, updateProfile,
-            isLoginModalOpen, isSignupModalOpen,
-            openLogin, openSignup, closeModals
+            user,
+            token,
+            login,
+            signup,
+            logout,
+            updateProfile,
+            isLoginModalOpen,
+            isSignupModalOpen,
+            openLogin,
+            openSignup,
+            closeModals
         }}>
             {children}
         </AuthContext.Provider>

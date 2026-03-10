@@ -22,8 +22,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # CORS Policy
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to frontend domains
-    allow_credentials=False,
+    allow_origins=["*"],  # Later you can restrict to your frontend domain
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -32,20 +32,20 @@ app.add_middleware(
 app.add_event_handler("startup", connect_to_mongo)
 app.add_event_handler("shutdown", close_mongo_connection)
 
-# Rate limiter middleware applied to Project routes to prevent abuse
+# Rate limiter middleware
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
-    # Very rudimentary manual check or you can use @limiter.limit() on routes directly
     response = await call_next(request)
     return response
 
-# Routes Registration
+# Routes
 app.include_router(auth_routes.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(project_routes.router, prefix="/api/projects", tags=["Projects"])
 
 @app.get("/")
 async def root():
     return {"message": f"Welcome to {settings.PROJECT_NAME}"}
+
 
 if __name__ == "__main__":
     import uvicorn
