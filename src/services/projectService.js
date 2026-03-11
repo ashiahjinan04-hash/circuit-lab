@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:8000/api';
+export const API_BASE_URL = 'https://circuit-lab-backend.onrender.com/api';
 
 export const projectService = {
     // 1. Get all projects
